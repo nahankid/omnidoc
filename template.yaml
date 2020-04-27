@@ -17,6 +17,7 @@ Globals:
         db_user: '{{resolve:ssm:RDSPGDBUser:1}}'
         db_name: '{{resolve:ssm:DMSDBName:2}}'
         db_pass: '{{resolve:ssm:RDSPGDBPass:1}}'
+        dms_bucket: '{{resolve:ssm:DMSBucket:1}}'
 
 Resources:
   CreateDocumentFunction:
@@ -30,59 +31,12 @@ Resources:
           Properties:
             Path: /
             Method: POST
-
-  ListDocumentsFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: services/assets/list
-      Handler: list
-      Events:
-        CatchAll:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /
-            Method: GET
-
-  GetDocumentFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: services/assets/get
-      Handler: get
-      Events:
-        CatchAll:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /{id}
-            Method: GET
-
-  UpdateDocumentFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: services/assets/update
-      Handler: update
-      Events:
-        CatchAll:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /{id}
-            Method: PUT
-
-  DeleteDocumentFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: services/assets/delete
-      Handler: delete
-      Events:
-        CatchAll:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /{id}
-            Method: DELETE
-
-  DMSBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: "Clix-DMS-Bucket"
+      Policies:
+        - S3WritePolicy: 
+            Effect: Allow
+            Action:
+            - s3:PutObject
+            BucketName: '{{resolve:ssm:DMSBucket:1}}'
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
