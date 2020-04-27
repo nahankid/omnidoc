@@ -8,9 +8,6 @@ type Asset struct {
 	UserID   int    `gorm:"not null"`
 	AppID    int    `gorm:"not null"`
 	Type     string `gorm:"not null"`
-	Attrs    Attrs
+	Attrs    string `sql:"type:JSONB NOT NULL DEFAULT '{}'::JSONB"`
 	StoreRef string `json:"-"`
 }
-
-// Attrs for unstructured JSON associated with an asset
-type Attrs map[string]interface{}

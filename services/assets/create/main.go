@@ -13,7 +13,7 @@ type CreateRequest struct {
 	UserID int    `json:"user_id"`
 	AppID  int    `json:"app_id"`
 	Type   string `json:"type"`
-	Attrs  Attrs  `json:"attrs"`
+	Attrs  string `json:"attrs"`
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
