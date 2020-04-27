@@ -17,7 +17,6 @@ Globals:
         db_user: '{{resolve:ssm:RDSPGDBUser:1}}'
         db_name: '{{resolve:ssm:GoAuthDBName:1}}'
         db_pass: '{{resolve:ssm:RDSPGDBPass:1}}'
-        jwt_key: '{{resolve:ssm:GoAuthJWTKey:1}}'
 
 Resources:
   CreateDocumentFunction:
@@ -79,6 +78,11 @@ Resources:
           Properties:
             Path: /{id}
             Method: DELETE
+
+  DMSBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: "Clix-DMS-Bucket"
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
