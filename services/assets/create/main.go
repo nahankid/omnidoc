@@ -8,6 +8,14 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
+// CreateRequest struct
+type CreateRequest struct {
+	UserID int    `json:"user_id"`
+	AppID  int    `json:"app_id"`
+	Type   string `json:"type"`
+	Attrs  Attrs  `json:"attrs"`
+}
+
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	return lib.APIResponse(http.StatusOK, "")
 }
