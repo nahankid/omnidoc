@@ -15,7 +15,7 @@ Globals:
       Variables:  
         db_host: '{{resolve:ssm:RDSPGEndpoint:1}}'
         db_user: '{{resolve:ssm:RDSPGDBUser:1}}'
-        db_name: '{{resolve:ssm:GoAuthDBName:1}}'
+        db_name: '{{resolve:ssm:DMSDBName:2}}'
         db_pass: '{{resolve:ssm:RDSPGDBPass:1}}'
 
 Resources:
