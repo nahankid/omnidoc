@@ -1,6 +1,6 @@
 # OmniDoc
 
-![Go](https://github.com/nahankid/shortie/workflows/Go/badge.svg)
+![Go](https://github.com/nahankid/omnidoc/workflows/Go/badge.svg)
 ![GitHub](https://img.shields.io/github/license/nahankid/omnidoc)
 [![Maintainability](https://api.codeclimate.com/v1/badges/add8791ba98cf2cc2a5e/maintainability)](https://codeclimate.com/github/nahankid/omnidoc/maintainability)
 ![GitHub repo size](https://img.shields.io/github/repo-size/nahankid/omnidoc)
