@@ -68,7 +68,7 @@ func validateRequest(request events.APIGatewayProxyRequest) (types.CreateRequest
 func createAsset(req types.CreateRequest) (string, error) {
 	// Get PutPresignedURL
 	key := fmt.Sprintf("/%d/%d/%s", req.AppID, req.UserID, req.FileName)
-	psURL, err := lib.PutS3PresignedURL(key)
+	psURL, err := lib.GetS3PresignedURL(key, lib.PutObjectRequest)
 	if err != nil {
 		log.Println("createAsset", err.Error())
 		return "", err

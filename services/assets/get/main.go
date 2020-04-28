@@ -101,7 +101,7 @@ func getAssets(filter models.Asset) (string, error) {
 	// Create response
 	resps := make([]types.GetResponse, len(assets))
 	for i, asset := range assets {
-		psURL, err := lib.GetS3PresignedURL(asset.FileName)
+		psURL, err := lib.GetS3PresignedURL(asset.FileName, lib.GetObjectRequest)
 		if err != nil {
 			log.Println("getAssets", err.Error())
 			return "", err
