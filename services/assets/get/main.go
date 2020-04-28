@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 	"omnidoc/db"
 	"omnidoc/lib"
@@ -11,16 +13,44 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/jinzhu/gorm"
 )
 
+var db2 *gorm.DB
+
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	filter, err := validateRequest(request)
+	if err != nil {
+		return lib.APIResponse(http.StatusBadRequest, err.Error())
+	}
+
+	// Open Database Connection
+	pgConn := db.PGConn{}
+	db2, err = pgConn.GetConnection()
+	defer db2.Close()
+	if err != nil {
+		return lib.APIResponse(http.StatusInternalServerError, err.Error())
+	}
+
+	assets, err := getAssets(filter)
+	if err != nil {
+		return lib.APIResponse(http.StatusInternalServerError, err.Error())
+	}
+
+	return lib.APIResponse(http.StatusOK, assets)
+}
+
+func validateRequest(request events.APIGatewayProxyRequest) (models.Asset, error) {
 	// Validate Index Request
 	a := request.QueryStringParameters["a"]
 	u := request.QueryStringParameters["u"]
 	t := request.QueryStringParameters["t"]
 
+	filter := models.Asset{}
+
 	if a == "" && u == "" {
-		return lib.APIResponse(http.StatusBadRequest, "Provide appID or userID")
+		log.Println("validateRequest", "Provide appID or userID")
+		return filter, errors.New("Provide appID or userID")
 	}
 
 	var appID, userID int
@@ -29,27 +59,20 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if a != "" {
 		appID, err = strconv.Atoi(a)
 		if err != nil {
-			return lib.APIResponse(http.StatusBadRequest, err.Error())
+			log.Println("validateRequest", err.Error())
+			return filter, err
 		}
 	}
 
 	if u != "" {
 		userID, err = strconv.Atoi(u)
 		if err != nil {
-			return lib.APIResponse(http.StatusBadRequest, err.Error())
+			log.Println("validateRequest", err.Error())
+			return filter, err
 		}
 	}
 
-	// Open Database Connection
-	pgConn := db.PGConn{}
-	db2, err := pgConn.GetConnection()
-	defer db2.Close()
-	if err != nil {
-		return lib.APIResponse(http.StatusInternalServerError, err.Error())
-	}
-
 	// Create filter for database query
-	filter := models.Asset{}
 	if appID != 0 {
 		filter.AppID = appID
 	}
@@ -62,11 +85,17 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		filter.Type = t
 	}
 
+	log.Println("Validated Request", filter)
+	return filter, nil
+}
+
+func getAssets(filter models.Asset) (string, error) {
 	var assets []models.Asset
 
 	db2.Where(filter).Find(&assets)
 	if db2.Error != nil {
-		return lib.APIResponse(http.StatusNotFound, db2.Error.Error())
+		log.Println("getAssets", db2.Error.Error())
+		return "", db2.Error
 	}
 
 	// Create response
@@ -74,18 +103,15 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	for i, asset := range assets {
 		psURL, err := lib.GetS3PresignedURL(asset.FileName)
 		if err != nil {
-			return lib.APIResponse(http.StatusInternalServerError, err.Error())
+			log.Println("getAssets", err.Error())
+			return "", err
 		}
 
 		resps[i] = types.GetResponse{Asset: asset, SignedURL: psURL}
 	}
 
 	res, err := json.Marshal(resps)
-	if err != nil {
-		return lib.APIResponse(http.StatusInternalServerError, err.Error())
-	}
-
-	return lib.APIResponse(http.StatusOK, string(res))
+	return string(res), err
 }
 
 func main() {
