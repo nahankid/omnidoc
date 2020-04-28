@@ -1,11 +1,10 @@
 # OmniDoc
 
 ![Go](https://github.com/nahankid/shortie/workflows/Go/badge.svg)
-![GitHub](https://img.shields.io/github/license/nahankid/sho.rt)
-[![Maintainability](https://api.codeclimate.com/v1/badges/eb06a36a6fcda7abc6f2/maintainability)](https://codeclimate.com/github/nahankid/sho.rt/maintainability)
-![GitHub repo size](https://img.shields.io/github/repo-size/nahankid/sho.rt)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/nahankid/sho.rt)
-
+![GitHub](https://img.shields.io/github/license/nahankid/omnidoc)
+[![Maintainability](https://api.codeclimate.com/v1/badges/add8791ba98cf2cc2a5e/maintainability)](https://codeclimate.com/github/nahankid/omnidoc/maintainability)
+![GitHub repo size](https://img.shields.io/github/repo-size/nahankid/omnidoc)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/nahankid/omnidoc)
 
 OmniDoc is a Document Management System, written in Go and automatically deployed on AWS, using:
 
@@ -20,7 +19,28 @@ OmniDoc is a Document Management System, written in Go and automatically deploye
 
 ## **Add a document to DMS**
 
+You can add a document to DMS in two steps:
+
+1. Get an asset pre-signed upload URL
+2. Upload a file to the pre-signed URL
+
+### Get an asset pre-signed upload URL
+
 ```POST /``` 
+
+### Request
+```
+{
+	"app_id": 4002,
+	"user_id": 402,
+	"type": "Loan Agreement",
+	"attrs": {
+		"key1": "value1",
+		"key2": "value2"
+	},
+	"filename": "Meeting Mania.xlsx"
+}
+```
 
 ### Parameters
 
@@ -35,17 +55,39 @@ OmniDoc is a Document Management System, written in Go and automatically deploye
 
 ### Response
 
+```
+{
+    "url": "<SIGNED_URL>",
+    "expires_at": "2020-04-28T03:29:26.882234986Z"
+}
+```
+
 | Name         | Type     | Description                                              |
 | ------------ | ---------| -------------------------------------------------------- | 
 | url          | string   | Presigned URL for uploading the file                     | 
 | expires_at   | string   | Time at which the the presigned URL expires.             | 
 
 
+### Upload a file to the pre-signed URL
+``` PUT <SIGNED_URL> ```
 
 
-## **Get documents from DMS**
 
-```GET /``` 
+
+## **Retrieve documents from DMS**
+
+You can rertrieve all documents from DMS for:
+1. Application
+2. User
+3. Application and Type
+4. User and Type
+
+```
+- GET /?u=401
+- GET /?a=4001 
+- GET /?a=4001&u=401
+- GET /?a=4001&t=Loan Agreement
+```
 
 ### Parameters
 
@@ -55,9 +97,11 @@ OmniDoc is a Document Management System, written in Go and automatically deploye
 | a            | string   | Application ID for which the documents are to be retrieved  | 
 | t            | string   | Type of document to be retrieved                            | 
 
+
 ### Response
 
-```[
+```
+[
     {
         "asset": {
             "ID": 5,
@@ -73,15 +117,18 @@ OmniDoc is a Document Management System, written in Go and automatically deploye
             }
         },
         "signed_url": {
-            "url": ""
+            "url": "<SIGNED_URL>",
+            "expires_at": "2020-04-28T03:29:55.334828375Z"
         }
     }
-]```
+]
+```
 
 
-## Contributing to Shortie
+## Contributing to OmniDoc
 
 Fork, fix, then send me a pull request.
+
 
 ## License
 
