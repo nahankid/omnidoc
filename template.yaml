@@ -11,13 +11,6 @@ Globals:
     Timeout: 5
     Runtime: go1.x
     Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
-    Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
-      Variables:  
-        db_host: '{{resolve:ssm:RDSPGEndpoint:1}}'
-        db_user: '{{resolve:ssm:RDSPGDBUser:1}}'
-        db_name: '{{resolve:ssm:DMSDBName:2}}'
-        db_pass: '{{resolve:ssm:RDSPGDBPass:1}}'
-        dms_bucket: '{{resolve:ssm:DMSBucket:1}}'
 
 Resources:
   CreateDocumentFunction:
@@ -37,6 +30,13 @@ Resources:
             Action:
             - s3:PutObject
             BucketName: '{{resolve:ssm:DMSBucket:1}}'
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:  
+          db_host: '{{resolve:ssm:RDSPGEndpoint:1}}'
+          db_user: '{{resolve:ssm:RDSPGDBUser:1}}'
+          db_name: '{{resolve:ssm:DMSDBName:2}}'
+          db_pass: '{{resolve:ssm:RDSPGDBPass:1}}'
+          dms_bucket: '{{resolve:ssm:DMSBucket:1}}'
 
   ListDocumentsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -55,6 +55,13 @@ Resources:
             Action:
             - s3:GetObject
             BucketName: '{{resolve:ssm:DMSBucket:1}}'
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:  
+          db_host: '{{resolve:ssm:RDSPGEndpoint:1}}'
+          db_user: '{{resolve:ssm:RDSPGDBUser:1}}'
+          db_name: '{{resolve:ssm:DMSDBName:2}}'
+          db_pass: '{{resolve:ssm:RDSPGDBPass:1}}'
+          dms_bucket: '{{resolve:ssm:DMSBucket:1}}'
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

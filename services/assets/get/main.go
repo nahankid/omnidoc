@@ -6,16 +6,12 @@ import (
 	"omnidoc/db"
 	"omnidoc/lib"
 	"omnidoc/models"
+	"omnidoc/types"
 	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-type getResponse struct {
-	Asset     models.Asset       `json:"asset"`
-	SignedURL lib.S3PresignedURL `json:"signed_url"`
-}
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Validate Index Request
@@ -74,14 +70,14 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 
 	// Create response
-	resps := make([]getResponse, len(assets))
+	resps := make([]types.GetResponse, len(assets))
 	for i, asset := range assets {
 		psURL, err := lib.GetS3PresignedURL(asset.FileName)
 		if err != nil {
 			return lib.APIResponse(http.StatusInternalServerError, err.Error())
 		}
 
-		resps[i] = getResponse{Asset: asset, SignedURL: psURL}
+		resps[i] = types.GetResponse{Asset: asset, SignedURL: psURL}
 	}
 
 	res, err := json.Marshal(resps)
