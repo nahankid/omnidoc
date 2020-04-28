@@ -23,8 +23,8 @@ Resources:
   CreateDocumentFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: services/assets/create
-      Handler: create
+      CodeUri: services/assets/put
+      Handler: put
       Events:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -36,6 +36,24 @@ Resources:
             Effect: Allow
             Action:
             - s3:PutObject
+            BucketName: '{{resolve:ssm:DMSBucket:1}}'
+
+  ListDocumentsFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: services/assets/get
+      Handler: get
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /
+            Method: GET
+      Policies:
+        - S3ReadPolicy: 
+            Effect: Allow
+            Action:
+            - s3:GetObject
             BucketName: '{{resolve:ssm:DMSBucket:1}}'
 
 Outputs:
