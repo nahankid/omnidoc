@@ -10,6 +10,7 @@ import (
 	"omnidoc/models"
 	"omnidoc/types"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -32,10 +33,15 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return lib.APIResponse(http.StatusInternalServerError, err.Error())
 	}
 
+	c := make(chan int)
+	go recordRequest(request, filter, c)
+
 	assets, err := getAssets(filter)
 	if err != nil {
 		return lib.APIResponse(http.StatusInternalServerError, err.Error())
 	}
+
+	log.Println("Recorded Request", <-c)
 
 	return lib.APIResponse(http.StatusOK, assets)
 }
@@ -87,6 +93,29 @@ func validateRequest(request events.APIGatewayProxyRequest) (models.Asset, error
 
 	log.Println("Validated Request", filter)
 	return filter, nil
+}
+
+func recordRequest(request events.APIGatewayProxyRequest, filter models.Asset, c chan int) {
+	// Record visit
+	db2.AutoMigrate(&models.Visit{})
+
+	visit := models.Visit{
+		AppID:     filter.AppID,
+		UserID:    filter.UserID,
+		IP:        request.RequestContext.Identity.SourceIP,
+		UserAgent: request.RequestContext.Identity.UserAgent,
+		APIKey:    request.RequestContext.Identity.APIKey,
+		VisitedAt: time.Now(),
+	}
+
+	log.Println("Recording visit", visit)
+
+	db2.Create(visit)
+	if db2.Error != nil {
+		log.Println("recordRequest", db2.Error.Error())
+	}
+
+	c <- 1
 }
 
 func getAssets(filter models.Asset) (string, error) {

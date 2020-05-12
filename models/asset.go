@@ -16,4 +16,5 @@ type Asset struct {
 	FileName string `gorm:"not null"`
 	Type     string `gorm:"not null"`
 	Attrs    postgres.Jsonb
+	APIKey   string `gorm:"not null;default:'na'"`
 }
