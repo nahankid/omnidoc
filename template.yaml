@@ -1,9 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  omnidoc
-  
-  Sample SAM Template for omnidoc
+  omnidocs
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -18,19 +16,51 @@ Globals:
         db_name: '{{resolve:ssm:DMSDBName:1}}'
         db_pass: '{{resolve:ssm:DMSDBPass:1}}'
         dms_bucket: '{{resolve:ssm:DMSBucket:1}}'
+        notification_email: '{{resolve:ssm:NotificationEmail:1}}'
 
 Resources:
+  ##   API Gateway                                                                                 
+  SiteAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: "Document Management System API"
+      StageName: Prod
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+      Auth:
+        ApiKeyRequired: true # sets for all methods 
+        UsagePlan:
+          UsagePlanName: "Clix UAT"
+          CreateUsagePlan: PER_API
+          Description: Usage plan for this API
+          Quota:
+            Limit: 500
+            Period: MONTH
+          Throttle:
+            BurstLimit: 100
+            RateLimit: 50
+      MethodSettings:
+        - HttpMethod: "*"
+          ResourcePath: "/*"
+          LoggingLevel: INFO
+          DataTraceEnabled: true
+          MetricsEnabled: true
+          ThrottlingRateLimit: 2000
+          ThrottlingBurstLimit: 1000
+
   CreateDocumentFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: services/assets/put
       Handler: put
       Events:
-        CatchAll:
+        SiteAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /
             Method: POST
+            RestApiId: !Ref SiteAPI
+
       Policies:
         - S3WritePolicy: 
             Effect: Allow
@@ -44,11 +74,12 @@ Resources:
       CodeUri: services/assets/get
       Handler: get
       Events:
-        CatchAll:
+        SiteAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /
             Method: GET
+            RestApiId: !Ref SiteAPI
       Policies:
         - S3ReadPolicy: 
             Effect: Allow
@@ -56,10 +87,75 @@ Resources:
             - s3:GetObject
             BucketName: '{{resolve:ssm:DMSBucket:1}}'
 
+###################################################################################################
+##   Metrics outputs                                                                            ##
+###################################################################################################
+
+  NotifyTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: "sharad.gupta@clix.capital"
+          Protocol: "email"
+
+  APIGateway4xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "OmniDoc API 4xx Alarm"
+      AlarmDescription: "4xx monitor"
+      MetricName: "4XXError"
+      Namespace: "AWS/ApiGateway"
+      Dimensions:
+          - Name: "ApiName"
+            Value: "OmniDoc API"
+      Statistic: "Average"
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: .01
+      ComparisonOperator: "GreaterThanThreshold"
+      AlarmActions:
+        - !Ref NotifyTopic
+
+  APIGateway5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "OmniDoc API 5xx Alarm"
+      AlarmDescription: "5xx monitor"
+      MetricName: "5XXError"
+      Namespace: "AWS/ApiGateway"
+      Dimensions:
+          - Name: "ApiName"
+            Value: "OmniDoc API"
+      Statistic: "Average"
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: .01
+      ComparisonOperator: "GreaterThanThreshold"
+      AlarmActions:
+        - !Ref NotifyTopic
+
+  APIGatewayLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "OmniDoc API Latency Alarm"
+      AlarmDescription: "Latency monitor"
+      MetricName: "Latency"
+      Namespace: "AWS/ApiGateway"
+      Dimensions:
+          - Name: "ApiName"
+            Value: "OmniDoc API"
+      ExtendedStatistic: "p99"
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 75
+      ComparisonOperator: "GreaterThanThreshold"
+      AlarmActions:
+        - !Ref NotifyTopic
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  OmniDocAPI:
+  SiteAPI:
     Description: "API Gateway endpoint URL for Prod environment for OmniDoC API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub "https://${SiteAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

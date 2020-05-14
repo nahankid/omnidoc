@@ -1,0 +1,25 @@
+# Thank you for trying serverless-artillery!
+# This default script is intended to get you started quickly.
+# There is a lot more that Artillery can do.
+# You can find great documentation of the possibilities at:
+# https://artillery.io/docs/
+config:
+  # this hostname will be used as a prefix for each URI in the flow unless a complete URI is specified
+  target: "https://rhrj0rsvc9.execute-api.ap-south-1.amazonaws.com/Prod"
+  phases:
+    - duration: 120
+      arrivalRate: 100
+
+  defaults:
+    headers:
+      x-api-key: "iP3A0XdQ3G8MdPFVbCK9E5McV2trT5PQ3RxsDwJz"
+
+scenarios:
+  - flow:
+      - post:
+          url: "/"
+          json: 
+            app_id: 202
+            user_id: 2002
+            type: "Loan Agreement"
+            filename: "abc.pdf"
