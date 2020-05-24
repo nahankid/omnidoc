@@ -58,6 +58,11 @@ func validateRequest(request events.APIGatewayProxyRequest) (types.CreateRequest
 		return req, err
 	}
 
+	if err = req.Valid(); err != nil {
+		log.Println("validateRequest", err.Error())
+		return req, err
+	}
+
 	log.Println("validateRequest", req)
 
 	return req, nil
@@ -67,7 +72,7 @@ func createAsset(req types.CreateRequest, request events.APIGatewayProxyRequest)
 	db2.AutoMigrate(&models.Asset{})
 
 	// Get PutPresignedURL
-	key := fmt.Sprintf("/%d/%d/%s", req.AppID, req.UserID, req.FileName)
+	key := fmt.Sprintf("/%ss/%d/%s", req.ObjectType, req.ObjectID, req.FileName)
 	psURL, err := lib.GetS3PresignedURL(key, lib.PutObjectRequest)
 	if err != nil {
 		log.Println("createAsset", err.Error())
@@ -76,12 +81,12 @@ func createAsset(req types.CreateRequest, request events.APIGatewayProxyRequest)
 
 	// Create the asset
 	asset := models.Asset{
-		UserID:   req.UserID,
-		AppID:    req.AppID,
-		FileName: key,
-		Type:     req.Type,
-		Attrs:    postgres.Jsonb{RawMessage: json.RawMessage(req.Attrs)},
-		APIKey:   request.RequestContext.Identity.APIKey,
+		ObjectType: req.ObjectType,
+		ObjectID:   req.ObjectID,
+		FileName:   key,
+		Type:       req.Type,
+		Attrs:      postgres.Jsonb{RawMessage: json.RawMessage(req.Attrs)},
+		APIKey:     request.RequestContext.Identity.APIKey,
 	}
 
 	db2.Create(&asset)

@@ -1,7 +1,8 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
+	"time"
+
 	"github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -10,11 +11,12 @@ type Attrs interface{}
 
 // Asset model
 type Asset struct {
-	gorm.Model
-	AppID    int    `gorm:"index;not null"`
-	UserID   int    `gorm:"not null"`
-	FileName string `gorm:"not null"`
-	Type     string `gorm:"not null"`
-	Attrs    postgres.Jsonb
-	APIKey   string `gorm:"not null;default:'na'"`
+	APIKey     string         `gorm:"not null" json:"-"`
+	ObjectType string         `gorm:"not null" json:"obj_type"`
+	ObjectID   int            `gorm:"index;not null" json:"obj_id"`
+	FileName   string         `gorm:"not null" json:"filename"`
+	Type       string         `gorm:"not null" json:"type"`
+	Attrs      postgres.Jsonb `json:"attrs"`
+	CreatedAt  time.Time      `gorm:"not null" json:"created_at"`
+	UpdatedAt  time.Time      `gorm:"not null" json:"updated_at"`
 }

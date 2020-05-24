@@ -6,11 +6,11 @@ import (
 
 // Visit model
 type Visit struct {
-	AppID     int
-	UserID    int
-	Type      string
-	IP        string
-	UserAgent string
-	APIKey    string
-	VisitedAt time.Time `gorm:"not null;default:CURRENT_TIMESTAMP" json:"visited_at"`
+	ObjectType string    `gorm:"not null" json:"obj_type"`
+	ObjectID   int       `gorm:"not null" json:"obj_id"`
+	Type       string    `json:"type"`
+	IP         string    `json:"ip"`
+	UserAgent  string    `json:"user_agent"`
+	APIKey     string    `gorm:"not null" json:"-"`
+	VisitedAt  time.Time `gorm:"not null;default:CURRENT_TIMESTAMP" json:"visited_at"`
 }

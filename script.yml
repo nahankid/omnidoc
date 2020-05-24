@@ -5,21 +5,21 @@
 # https://artillery.io/docs/
 config:
   # this hostname will be used as a prefix for each URI in the flow unless a complete URI is specified
-  target: "https://rhrj0rsvc9.execute-api.ap-south-1.amazonaws.com/Prod"
+  target: "https://dms-uat.clix.capital"
   phases:
-    - duration: 120
-      arrivalRate: 100
+    - duration: 300
+      arrivalRate: 10
 
   defaults:
     headers:
-      x-api-key: "iP3A0XdQ3G8MdPFVbCK9E5McV2trT5PQ3RxsDwJz"
+      x-api-key: "SHQW0wYirN9gSHwYTUBUO2JkmLk0Ad5Ta2KFcF7W"
 
 scenarios:
   - flow:
       - post:
           url: "/"
           json: 
-            app_id: 202
-            user_id: 2002
+            object_type: "app"
+            object_id: 2002
             type: "Loan Agreement"
             filename: "abc.pdf"

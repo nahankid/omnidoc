@@ -31,8 +31,8 @@ You can add a document to DMS in two steps:
 ### Request
 ```
 {
-	"app_id": 4002,
-	"user_id": 402,
+	"obj_type": "app",
+	"obj_id": 402,
 	"type": "Loan Agreement",
 	"attrs": {
 		"key1": "value1",
@@ -46,8 +46,8 @@ You can add a document to DMS in two steps:
 
 | Name      | Type     | Description                                              |
 | --------- | ---------| -------------------------------------------------------- | 
-| app_id    | int      | Application ID for which the document is being stored.   | 
-| user_id   | int      | User ID for which the document is being stored.          | 
+| obj_type  | string   | Object Type for which the document is being stored - app or user  | 
+| obj_id    | int      | Object ID for which the document is being stored.          | 
 | type      | string   | Type of the document being stored.                       | 
 | filename  | string   | Filename of the document to be stored.                   | 
 | attrs     | JSON     | Any metadata to be stored with the document.             | 
@@ -83,18 +83,16 @@ You can rertrieve all documents from DMS for:
 4. User and Type
 
 ```
-- GET /?u=401
-- GET /?a=4001 
-- GET /?a=4001&u=401
-- GET /?a=4001&t=Loan Agreement
+- GET /?o=app&id=402
+- GET /?o=app&id=402&t=Loan Agreement
 ```
 
 ### Parameters
 
 | Name         | Type     | Description                                                 |
 | ------------ | ---------| ----------------------------------------------------------- | 
-| u            | string   | User ID for which the documents are to be retrieved         | 
-| a            | string   | Application ID for which the documents are to be retrieved  | 
+| o            | string   | Object Type for which the documents are to be retrieved     | 
+| id           | int      | Object ID for which the documents are to be retrieved       | 
 | t            | string   | Type of document to be retrieved                            | 
 
 
@@ -102,25 +100,25 @@ You can rertrieve all documents from DMS for:
 
 ```
 [
+[
     {
         "asset": {
-            "ID": 5,
-            "CreatedAt": "2020-04-28T03:15:12.526861Z",
-            "UpdatedAt": "2020-04-28T03:15:12.526861Z",
-            "DeletedAt": null,
-            "AppID": 4002,
-            "UserID": 401,
-            "FileName": "/4002/401/Hidden Characteristics of Unicorns.pdf",
-            "Type": "Loan Agreement",
-            "Attrs": {
+            "obj_type": "app",
+            "obj_id": 121,
+            "filename": "/app/121/loanagreement.pdf",
+            "type": "Loan Agreement",
+            "attrs": {
                 "key1": "value1"
-            }
+            },
+            "created_at": "2020-05-23T19:12:19.308369Z",
+            "updated_at": "2020-05-23T19:12:19.308369Z"
         },
         "signed_url": {
-            "url": "<SIGNED_URL>",
-            "expires_at": "2020-04-28T03:29:55.334828375Z"
+            "url": "<SIGNED_URL",
+            "expires_at": "2020-05-24T04:42:31.6585508Z"
         }
-    }
+    },
+  
 ]
 ```
 

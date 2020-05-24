@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"omnidoc/db"
@@ -48,44 +48,26 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 func validateRequest(request events.APIGatewayProxyRequest) (models.Asset, error) {
 	// Validate Index Request
-	a := request.QueryStringParameters["a"]
-	u := request.QueryStringParameters["u"]
+	obj := request.QueryStringParameters["o"]
+	id := request.QueryStringParameters["id"]
 	t := request.QueryStringParameters["t"]
 
 	filter := models.Asset{}
 
-	if a == "" && u == "" {
-		log.Println("validateRequest", "Provide appID or userID")
-		return filter, errors.New("Provide appID or userID")
+	if obj == "" && id == "" && !(obj == "app" || obj == "user") {
+		log.Printf("Missing or invalid obj_type %s and obj_id %s", obj, id)
+		return filter, fmt.Errorf("Missing or invalid obj_type %s and obj_id %s", obj, id)
 	}
 
-	var appID, userID int
-	var err error
-
-	if a != "" {
-		appID, err = strconv.Atoi(a)
-		if err != nil {
-			log.Println("validateRequest", err.Error())
-			return filter, err
-		}
-	}
-
-	if u != "" {
-		userID, err = strconv.Atoi(u)
-		if err != nil {
-			log.Println("validateRequest", err.Error())
-			return filter, err
-		}
+	oid, err := strconv.Atoi(id)
+	if err != nil {
+		log.Println("validateRequest", err.Error())
+		return filter, err
 	}
 
 	// Create filter for database query
-	if appID != 0 {
-		filter.AppID = appID
-	}
-
-	if userID != 0 {
-		filter.UserID = userID
-	}
+	filter.ObjectType = obj
+	filter.ObjectID = oid
 
 	if t != "" {
 		filter.Type = t
@@ -100,12 +82,12 @@ func recordRequest(request events.APIGatewayProxyRequest, filter models.Asset, c
 	db2.AutoMigrate(&models.Visit{})
 
 	visit := models.Visit{
-		AppID:     filter.AppID,
-		UserID:    filter.UserID,
-		IP:        request.RequestContext.Identity.SourceIP,
-		UserAgent: request.RequestContext.Identity.UserAgent,
-		APIKey:    request.RequestContext.Identity.APIKey,
-		VisitedAt: time.Now(),
+		ObjectType: filter.ObjectType,
+		ObjectID:   filter.ObjectID,
+		IP:         request.RequestContext.Identity.SourceIP,
+		UserAgent:  request.RequestContext.Identity.UserAgent,
+		APIKey:     request.RequestContext.Identity.APIKey,
+		VisitedAt:  time.Now(),
 	}
 
 	log.Println("Recording visit", visit)
@@ -121,7 +103,8 @@ func recordRequest(request events.APIGatewayProxyRequest, filter models.Asset, c
 func getAssets(filter models.Asset) (string, error) {
 	var assets []models.Asset
 
-	db2.Where(filter).Find(&assets)
+	db2.Where(filter).Select("DISTINCT ON (file_name) *").Order("file_name, updated_at DESC").Find(&assets)
+	// db2.Where(filter).Find(&assets)
 	if db2.Error != nil {
 		log.Println("getAssets", db2.Error.Error())
 		return "", db2.Error
