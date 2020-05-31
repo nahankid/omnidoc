@@ -1,9 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  omnidocs
+Description: Fast Document Management Server in Go
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+###################################################################################################
+##   Global Variablees                                                                           ##
+##   More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+###################################################################################################
 Globals:
   Function:
     Timeout: 5
@@ -17,10 +19,21 @@ Globals:
         db_pass: '{{resolve:ssm:DMSDBPass:1}}'
         dms_bucket: '{{resolve:ssm:DMSBucket:1}}'
         notification_email: '{{resolve:ssm:NotificationEmail:1}}'
-
+  Api:
+    # enable CORS; to make more specific, change the origin wildcard
+    # to a particular domain name, e.g. "'www.example.com'"
+    EndpointConfiguration: EDGE
+    Cors: 
+      AllowMethods: "'OPTIONS,POST,GET'"
+      AllowHeaders: "'Content-Type'"
+      AllowOrigin: "'*'"   
+      
+##################################################################################################
+##   Template Resources                                                                          ##
+###################################################################################################
 Resources:
   ##   API Gateway                                                                                 
-  SiteAPI:
+  DMSAPI:
     Type: AWS::Serverless::Api
     Properties:
       Name: "Document Management System API"
@@ -47,6 +60,11 @@ Resources:
           MetricsEnabled: true
           ThrottlingRateLimit: 2000
           ThrottlingBurstLimit: 1000
+      DefinitionBody:
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: './api.yaml'
 
   CreateDocumentFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -54,13 +72,14 @@ Resources:
       CodeUri: services/assets/put
       Handler: put
       Events:
-        SiteAPI:
+        DMSAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /
             Method: POST
-            RestApiId: !Ref SiteAPI
-
+            RestApiId: !Ref DMSAPI
+            Auth:
+              ApiKeyRequired: true # sets for all methods
       Policies:
         - S3WritePolicy: 
             Effect: Allow
@@ -74,12 +93,14 @@ Resources:
       CodeUri: services/assets/get
       Handler: get
       Events:
-        SiteAPI:
+        DMSAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /
             Method: GET
-            RestApiId: !Ref SiteAPI
+            RestApiId: !Ref DMSAPI
+            Auth:
+              ApiKeyRequired: true # sets for all methods
       Policies:
         - S3ReadPolicy: 
             Effect: Allow
@@ -156,6 +177,6 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  SiteAPI:
+  DMSAPI:
     Description: "API Gateway endpoint URL for Prod environment for OmniDoC API"
-    Value: !Sub "https://${SiteAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub "https://${DMSAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

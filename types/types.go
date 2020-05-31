@@ -25,19 +25,23 @@ type GetResponse struct {
 
 // DocumentCodes constant
 var DocumentCodes = map[string]int{
-	"loan agreement":  101,
-	"caf":             102,
-	"soc":             103,
-	"noc":             104,
-	"passport":        201,
-	"pan":             202,
-	"aadhaar":         203,
-	"driving license": 204,
-	"voter id card":   205,
-	"nrega job card":  206,
-	"utility bill":    207,
-	"bank statement":  208,
-	"rent agreement":  209,
+	"loan agreement":         101,
+	"caf":                    102,
+	"soc":                    103,
+	"noc":                    104,
+	"passport":               201,
+	"pan":                    202,
+	"aadhaar":                203,
+	"driving license":        204,
+	"voter id card":          205,
+	"nrega job card":         206,
+	"utility bill":           207,
+	"bank statement":         208,
+	"rent agreement":         209,
+	"experian bureau report": 210,
+	"cibil bureau report":    211,
+	"crif bureau report":     212,
+	"equifax bureau report":  213,
 }
 
 // Valid function

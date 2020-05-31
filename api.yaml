@@ -1,0 +1,189 @@
+openapi: "3.0.1"
+info:
+  title: "Document Management Server API"
+  version: "2.0.0"
+
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestBody: true
+    validateRequestParameters: true
+  params:
+    validateRequestBody: false
+    validateRequestParameters: true
+  body:
+    validateRequestBody: true
+    validateRequestParameters: false
+
+paths:
+  /:
+    ## Get all links for user
+    get:
+      summary: Fetch documents from DMS
+      security:
+      - APIKeyAuthorizer: []
+      parameters:
+        - $ref: '#/components/parameters/authHeader'
+        - $ref: '#/components/parameters/obj_type'
+        - $ref: '#/components/parameters/obj_id'
+        - $ref: '#/components/parameters/doc_type'
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Cache-Control:
+              type: "string"
+            
+      ## API Gateway Integration
+      x-amazon-apigateway-integration:
+        type: aws_proxy   
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListDocumentsFunction.Arn}/invocations
+        passthroughBehavior: "when_no_templates"
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          "400":
+            statusCode: "400"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+
+    ## Save a new document to DMS
+    post:
+      summary: Save document to DMS
+      x-amazon-apigateway-request-validator: body
+      security:
+        - APIKeyAuthorizer: []
+      parameters:
+        - $ref: '#/components/parameters/authHeader'
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostBody'
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+        "400":
+          description: "400 response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+
+      ## API Gateway integration
+      x-amazon-apigateway-integration:
+        type: aws_proxy   
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateDocumentFunction.Arn}/invocations
+        passthroughBehavior: "when_no_templates"
+        responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+          "400":
+            statusCode: "400"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+
+    ## Options for get and post
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      x-amazon-apigateway-integration:
+        type: "mock"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+                
+## Validation models
+components:
+  schemas:
+    PostBody:
+      type: object
+      properties:
+        obj_type:
+          type: string
+        obj_id:
+          type: integer
+        type:
+          type: string
+        filename:
+          type: string
+      required:
+        - obj_type
+        - obj_id
+        - type
+        - filename
+
+  parameters:
+    authHeader:
+      in: header
+      name: x-api-key
+      required: true
+      description: Contains authorization token
+      schema:
+        type: string
+
+    obj_type:
+      in: query
+      name: obj_type
+      required: true
+      schema:
+        type: string
+      description: Type of the object - user or app
+
+    obj_id:
+      in: query
+      name: id
+      required: true
+      schema:
+        type: integer
+      description: ID of the object - user or app
+
+    doc_type:
+      in: query
+      name: t
+      required: false
+      schema:
+        type: string
+      description: Type of the document
+
+## Authorizer definition
+securityDefinitions:
+  APIKeyAuthorizer:
+    type: apiKey  
+    name: x-api-key
+    in: header

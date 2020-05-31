@@ -10,6 +10,7 @@ import (
 func APIResponse(code int, msg string) (events.APIGatewayProxyResponse, error) {
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json; charset=UTF-8"
+	headers["Access-Control-Allow-Origin"] = "*"
 
 	log.Printf("%d - %s\n", code, msg)
 
