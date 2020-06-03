@@ -11,7 +11,7 @@ import (
 // CreateRequest struct
 type CreateRequest struct {
 	ObjectType string          `json:"obj_type"`
-	ObjectID   int             `json:"obj_id"`
+	ObjectID   int64           `json:"obj_id"`
 	FileName   string          `json:"filename"`
 	Type       string          `json:"type"`
 	Attrs      json.RawMessage `json:"attrs"`
@@ -42,6 +42,8 @@ var DocumentCodes = map[string]int{
 	"cibil bureau report":    211,
 	"crif bureau report":     212,
 	"equifax bureau report":  213,
+	"CKYC XML":               214,
+	"OKYC XML":               215,
 }
 
 // Valid function

@@ -13,7 +13,7 @@ type Attrs interface{}
 type Asset struct {
 	APIKey     string         `gorm:"not null" json:"-"`
 	ObjectType string         `gorm:"not null" json:"obj_type"`
-	ObjectID   int            `gorm:"index;not null" json:"obj_id"`
+	ObjectID   int64          `gorm:"index;not null" json:"obj_id"`
 	FileName   string         `gorm:"not null" json:"filename"`
 	Type       string         `gorm:"not null" json:"type"`
 	Attrs      postgres.Jsonb `json:"attrs"`
