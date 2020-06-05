@@ -68,7 +68,6 @@ Resources:
       Auth:
         ApiKeyRequired: true # sets for all methods 
         UsagePlan:
-          UsagePlanName: "Clix UAT"
           CreateUsagePlan: PER_API
           Description: Usage plan for this API
           Quota:
