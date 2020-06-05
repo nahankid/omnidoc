@@ -1,0 +1,351 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+
+    Generates a CI/CD Pipeline for OmniDoc Document Management System API
+
+Parameters:
+
+    GithubRepo:
+      Description: Gitub Repository name
+      Type: String
+      Default: omnidoc
+
+    GithubToken:
+      Description: Github OAuth Token with full permissions on admin:repo_hook and repo
+      Type: String
+      NoEcho: true
+
+    GithubUser:
+      Description: Github user where the repository lives
+      Type: String
+      Default: nahankid
+
+    GithubBranch:
+      Description: Github branch to build and deploy
+      Type: String
+      Default: master
+
+    BuildImage:
+      Description: Build Image to be used for CodeBuild
+      Type: String
+      Default: aws/codebuild/standard:4.0 # More info on Images: https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
+
+
+Resources:
+
+ ######   #######  ##     ## ########   ######  ######## 
+##    ## ##     ## ##     ## ##     ## ##    ## ##       
+##       ##     ## ##     ## ##     ## ##       ##       
+ ######  ##     ## ##     ## ########  ##       ######   
+      ## ##     ## ##     ## ##   ##   ##       ##       
+##    ## ##     ## ##     ## ##    ##  ##    ## ##       
+ ######   #######   #######  ##     ##  ######  ########
+
+    # CodeBuild project and resources (S3 Bucket for build artifacts, Role, Project)
+    BuildArtifactsBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+          BucketEncryption:
+            ServerSideEncryptionConfiguration:
+              - ServerSideEncryptionByDefault:
+                  SSEAlgorithm: AES256
+          Tags: 
+            - 
+              Key: "Stack"
+              Value: !Ref AWS::StackName
+            -
+              Key: "Project"
+              Value: omnidoc
+        DeletionPolicy: Retain
+        UpdateReplacePolicy: Retain
+
+########  ##     ## #### ##       ########  
+##     ## ##     ##  ##  ##       ##     ## 
+##     ## ##     ##  ##  ##       ##     ## 
+########  ##     ##  ##  ##       ##     ## 
+##     ## ##     ##  ##  ##       ##     ## 
+##     ## ##     ##  ##  ##       ##     ## 
+########   #######  #### ######## ########  
+
+    CodeBuildProject:
+        Type: AWS::CodeBuild::Project
+        Properties:
+            Name: omnidoc
+            Description: Build project for the omnidoc
+            Artifacts:
+              Type: CODEPIPELINE
+            Environment: 
+                Type: LINUX_CONTAINER
+                ComputeType: BUILD_GENERAL1_SMALL
+                Image: !Ref BuildImage # More info on Images: https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
+                EnvironmentVariables:
+                  - 
+                    Name: BUILD_OUTPUT_BUCKET
+                    Value: !Ref BuildArtifactsBucket
+            Cache:
+              Type: S3
+              Location: !Sub ${BuildArtifactsBucket}/codebuild-cache
+            ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+            Source: 
+                Type: CODEPIPELINE
+            Tags: 
+              - 
+                Key: "Stack"
+                Value: !Ref AWS::StackName
+              -
+                Key: "Project"
+                Value: omnidoc
+
+########  #### ########  ######## ##       #### ##    ## ######## 
+##     ##  ##  ##     ## ##       ##        ##  ###   ## ##       
+##     ##  ##  ##     ## ##       ##        ##  ####  ## ##       
+########   ##  ########  ######   ##        ##  ## ## ## ######   
+##         ##  ##        ##       ##        ##  ##  #### ##       
+##         ##  ##        ##       ##        ##  ##   ### ##       
+##        #### ##        ######## ######## #### ##    ## ######## 
+
+    Pipeline:
+        Type: AWS::CodePipeline::Pipeline
+        Properties:
+            ArtifactStore: 
+                Location: !Ref BuildArtifactsBucket
+                Type: S3
+            Name: omnidoc
+            RoleArn: !GetAtt CodePipelineExecutionRole.Arn
+            Stages:
+                - Name: Source
+                  Actions:
+                    - Name: SourceCodeRepo
+                      ActionTypeId:
+                      # More info on Possible Values: https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html#action-requirements
+                        Category: Source
+                        Owner: ThirdParty
+                        Provider: GitHub
+                        Version: "1"
+                      Configuration:
+                        Owner: !Ref GithubUser
+                        Repo: !Ref GithubRepo
+                        Branch: !Ref GithubBranch
+                        OAuthToken: !Ref GithubToken
+                      OutputArtifacts:
+                        - Name: SourceCodeAsZip
+                      RunOrder: 1
+                - Name: Build
+                  Actions:
+                    - Name: CodeBuild
+                      ActionTypeId:
+                        Category: Build
+                        Owner: AWS
+                        Provider: CodeBuild
+                        Version: "1"
+                      Configuration:
+                        ProjectName: !Ref CodeBuildProject
+                      InputArtifacts:
+                        - Name: SourceCodeAsZip
+                      OutputArtifacts:
+                        - Name: BuildArtifactAsZip
+
+
+####    ###    ##     ## 
+ ##    ## ##   ###   ### 
+ ##   ##   ##  #### #### 
+ ##  ##     ## ## ### ## 
+ ##  ######### ##     ## 
+ ##  ##     ## ##     ## 
+#### ##     ## ##     ## 
+
+    CodeBuildServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Action: 
+                      - 'sts:AssumeRole'
+                    Effect: Allow
+                    Principal:
+                      Service:
+                        - codebuild.amazonaws.com
+            Path: /
+            Policies:
+                - PolicyName: CodeBuildLogs
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - 
+                        Effect: Allow
+                        Action:
+                          - 'logs:CreateLogGroup'
+                          - 'logs:CreateLogStream'
+                          - 'logs:PutLogEvents'
+                        Resource:
+                          - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/omnidoc'
+                          - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/omnidoc:*'
+                - PolicyName: CodeBuildArtifactsBucket
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - 
+                        Effect: Allow
+                        Action: 
+                          - 's3:GetObject'
+                          - 's3:GetObjectVersion'
+                          - 's3:PutObject'
+                        Resource:
+                          - !Sub 'arn:aws:s3:::${BuildArtifactsBucket}/*'
+                # - PolicyName: CodeBuildDynamoDB
+                #   PolicyDocument:
+                #     Version: '2012-10-17'
+                #     Statement: 
+                #       -
+                #         Effect: Allow
+                #         Action: 'dynamodb:*'
+                #         Resource: 
+                #           - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ShortenerAPI-LinkTable'
+                - PolicyName: CodeBuildFullAccess
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement: 
+                      -
+                        Effect: Allow
+                        Action: 
+                          - 'sns:*'
+                          - 'cloudwatch:*'
+                          - 'iam:*'
+                          - 'lambda:*'
+                          - 'apigateway:*'
+                        Resource: '*'
+                - PolicyName: CodeBuildCloudFormation
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement: 
+                      -
+                        Effect: Allow
+                        Action: 
+                          - 'cloudformation:*'
+                        Resource: 
+                          - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/omnidoc*/*'
+                          - !Sub 'arn:aws:cloudformation:${AWS::Region}:aws:transform/*'
+                - PolicyName: CodeBuildParameterStore
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      -
+                        Effect: Allow
+                        Action: 'ssm:GetParameters'
+                        Resource: '*'
+                        
+    CloudFormationExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            Action: 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+        Path: /
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
+
+    CodePipelineExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - 
+                    Action: 
+                        - 'sts:AssumeRole'
+                    Effect: Allow
+                    Principal:
+                      Service: 
+                        - codepipeline.amazonaws.com
+            Path: /
+            Policies:
+                - PolicyName: CodePipelineAccess
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                        - 
+                            Effect: Allow
+                            Action:
+                                - 'iam:PassRole'
+                                - 'lambda:InvokeFunction'
+                                - 'lambda:ListFunctions'
+                                - 'lambda:InvokeAsyc'
+                            Resource: '*'
+                - PolicyName: CodePipelineCodeAndArtifactsS3Bucket
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - 
+                        Effect: Allow
+                        Action: 's3:*'
+                        Resource: !Sub 'arn:aws:s3:::${BuildArtifactsBucket}/*'
+                - PolicyName: CodePipelineCodeBuildAndCloudformationAccess
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - 
+                        Effect: Allow
+                        Action: 
+                          - 'codebuild:StartBuild'
+                          - 'codebuild:BatchGetBuilds'
+                        Resource: 
+                          - !Sub 'arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuildProject}'
+                      - 
+                        Effect: Allow
+                        Action: 
+                          - 'cloudformation:CreateStack'
+                          - 'cloudformation:DescribeStacks'
+                          - 'cloudformation:DeleteStack'
+                          - 'cloudformation:UpdateStack'
+                          - 'cloudformation:CreateChangeSet'
+                          - 'cloudformation:ExecuteChangeSet'
+                          - 'cloudformation:DeleteChangeSet'
+                          - 'cloudformation:DescribeChangeSet'
+                          - 'cloudformation:SetStackPolicy'
+                          - 'cloudformation:SetStackPolicy'
+                          - 'cloudformation:ValidateTemplate'
+                        Resource: 
+                          - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/omnidoc*/*'
+                          - !Sub 'arn:aws:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31'
+
+
+Outputs:
+
+
+    GitHubRepositoryHttpUrl:
+      Description: GitHub Git repository
+      Value: !Sub https://github.com/${GithubUser}/${GithubRepo}.git
+
+    GitHubRepositorySshUrl:
+      Description: GitHub Git repository
+      Value: !Sub git@github.com:${GithubUser}/${GithubRepo}.git
+  
+    BuildArtifactS3Bucket:
+      Description: Amazon S3 Bucket for Pipeline and Build artifacts
+      Value: !Ref BuildArtifactsBucket
+
+    CodeBuildProject:
+      Description: CodeBuild Project name
+      Value: !Ref CodeBuildProject
+
+    CodePipeline:
+      Description: AWS CodePipeline pipeline name
+      Value: !Ref Pipeline
+
+    CodeBuildIAMRole:
+      Description: CodeBuild IAM Role
+      Value: !GetAtt CodeBuildServiceRole.Arn
+
+    CloudformationIAMRole:
+      Description: Cloudformation IAM Role
+      Value: !GetAtt CloudFormationExecutionRole.Arn
+
+    CodePipelineIAMRole:
+      Description: CodePipeline IAM Role
+      Value: !GetAtt CodePipelineExecutionRole.Arn

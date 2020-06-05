@@ -42,8 +42,8 @@ var DocumentCodes = map[string]int{
 	"cibil bureau report":    211,
 	"crif bureau report":     212,
 	"equifax bureau report":  213,
-	"CKYC XML":               214,
-	"OKYC XML":               215,
+	"ckyc xml":               214,
+	"okyc xml":               215,
 }
 
 // Valid function

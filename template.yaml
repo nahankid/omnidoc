@@ -2,6 +2,39 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Fast Document Management Server in Go
 
+Parameters:
+
+    DBHost:
+      Description: Omnidoc Database Host
+      Type: AWS::SSM::Parameter::Value<String>
+      Default: /service/omnidoc/db/host
+
+    DBName:
+      Description: Omnidoc Database Name
+      Type: AWS::SSM::Parameter::Value<String>
+      Default: /service/omnidoc/db/name
+
+    DBUser:
+      Description: Omnidoc Database User
+      Type: AWS::SSM::Parameter::Value<String>
+      Default: /service/omnidoc/db/user
+
+    DBPass:
+      Description: Omnidoc Database Password
+      Type: AWS::SSM::Parameter::Value<String>
+      Default: /service/omnidoc/db/password
+
+    DMSBucket:
+      Description: Omnidoc DMS S3 Bucket
+      Type: AWS::SSM::Parameter::Value<String>
+      Default: /service/omnidoc/dms/bucket
+
+    NotificationEmail:
+      Description: Omnidoc Notification Email
+      Type: AWS::SSM::Parameter::Value<String>
+      Default: /service/omnidoc/notification/email
+
+
 ###################################################################################################
 ##   Global Variablees                                                                           ##
 ##   More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
@@ -13,21 +46,13 @@ Globals:
     Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
     Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
       Variables:  
-        db_host: '{{resolve:ssm:DMSDBEndpoint:1}}'
-        db_user: '{{resolve:ssm:DMSDBUser:1}}'
-        db_name: '{{resolve:ssm:DMSDBName:1}}'
-        db_pass: '{{resolve:ssm:DMSDBPass:1}}'
-        dms_bucket: '{{resolve:ssm:DMSBucket:1}}'
-        notification_email: '{{resolve:ssm:NotificationEmail:1}}'
-  Api:
-    # enable CORS; to make more specific, change the origin wildcard
-    # to a particular domain name, e.g. "'www.example.com'"
-    EndpointConfiguration: EDGE
-    Cors: 
-      AllowMethods: "'OPTIONS,POST,GET'"
-      AllowHeaders: "'Content-Type'"
-      AllowOrigin: "'*'"   
-      
+        db_host: !Ref DBHost
+        db_name: !Ref DBName
+        db_user: !Ref DBUser
+        db_pass: !Ref DBPass
+        dms_bucket: !Ref DMSBucket
+        notification_email: !Ref NotificationEmail
+
 ##################################################################################################
 ##   Template Resources                                                                          ##
 ###################################################################################################
@@ -84,8 +109,8 @@ Resources:
         - S3WritePolicy: 
             Effect: Allow
             Action:
-            - s3:PutObject
-            BucketName: '{{resolve:ssm:DMSBucket:1}}'
+              - s3:PutObject
+            BucketName: !Ref DMSBucket
 
   ListDocumentsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -105,8 +130,8 @@ Resources:
         - S3ReadPolicy: 
             Effect: Allow
             Action:
-            - s3:GetObject
-            BucketName: '{{resolve:ssm:DMSBucket:1}}'
+              - s3:GetObject
+            BucketName: !Ref DMSBucket
 
 ###################################################################################################
 ##   Metrics outputs                                                                            ##
@@ -116,7 +141,7 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       Subscription:
-        - Endpoint: "sharad.gupta@clix.capital"
+        - Endpoint: !Ref NotificationEmail
           Protocol: "email"
 
   APIGateway4xxAlarm:

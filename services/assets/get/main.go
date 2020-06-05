@@ -59,7 +59,7 @@ func validateRequest(request events.APIGatewayProxyRequest) (models.Asset, error
 		return filter, fmt.Errorf("Missing or invalid obj_type %s and obj_id %s", obj, id)
 	}
 
-	oid, err := strconv.Atoi(id)
+	oid, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		log.Println("validateRequest", err.Error())
 		return filter, err

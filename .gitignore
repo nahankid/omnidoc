@@ -1,3 +1,4 @@
 samconfig.toml
 .aws-sam/
 bin/
+pipeline/Pipeline-Instructions.md
