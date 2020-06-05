@@ -61,7 +61,7 @@ Resources:
   DMSAPI:
     Type: AWS::Serverless::Api
     Properties:
-      Name: "Document Management System API"
+      Name: "Omnidoc Document Management System API"
       StageName: Prod
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
