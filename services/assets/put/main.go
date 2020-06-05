@@ -46,7 +46,7 @@ func validateRequest(request events.APIGatewayProxyRequest) (types.CreateRequest
 	var req types.CreateRequest
 	err := json.Unmarshal([]byte(request.Body), &req)
 	if err != nil {
-		log.Println("validateRequest", err.Error())
+		log.Println("validateRequest1", err.Error())
 		return req, err
 	}
 
