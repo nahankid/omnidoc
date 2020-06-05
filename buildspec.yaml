@@ -34,8 +34,8 @@ phases:
       - pip install pipenv --user
       - pipenv install awscli aws-sam-cli
       - pipenv run sam build
-      - aws cloudformation package --template-file template.yaml --s3-bucket $BUILD_OUTPUT_BUCKET --output-template-file packaged.yaml
-      # - pipenv run sam deploy --s3-bucket $BUILD_OUTPUT_BUCKET --stack-name omnidoc-Deploy --capabilities CAPABILITY_IAM --region ap-south-1 --no-confirm-changeset
+      - pipenv run sam deploy --s3-bucket $BUILD_OUTPUT_BUCKET --stack-name omnidoc-deploy --capabilities CAPABILITY_IAM --region ap-south-1 --no-confirm-changeset
+      # - aws cloudformation package --template-file template.yaml --s3-bucket $BUILD_OUTPUT_BUCKET --output-template-file packaged.yaml
   post_build:
     commands:
       # Use Post Build for notifications, git tags and any further customization after build
@@ -49,9 +49,7 @@ phases:
 artifacts:
   files:
     # list of local files relative to this build environment that will be added to the final artifact (zip)
-    - packaged.yaml
-    - get
-    - put
+    - template.yaml
   discard-paths: yes
 
 #########################################
