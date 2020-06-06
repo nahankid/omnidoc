@@ -22,6 +22,7 @@ Parameters:
     DBPass:
       Description: Omnidoc Database Password
       Type: AWS::SSM::Parameter::Value<String>
+      NoEcho: True
       Default: /service/omnidoc/db/password
 
     DMSBucket:
