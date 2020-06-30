@@ -51,6 +51,15 @@ var DocumentCodes = map[string]int{
 	"equifax bureau report":            213,
 	"ckyc xml":                         214,
 	"okyc xml":                         215,
+	"aadhaar front":                    216,
+	"aadhaar back":                     217,
+	"driving license front":            218,
+	"driving license back":             219,
+	"voter id card front":              220,
+	"voter id card back":               221,
+	"passport front":                   222,
+	"passport back":                    223,
+	"photo":                            224
 }
 
 // Valid function
