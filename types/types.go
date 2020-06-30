@@ -58,7 +58,8 @@ var DocumentCodes = map[string]int{
 	"voter id card front":              220,
 	"voter id card back":               221,
 	"passport front":                   222,
-	"passport back":                    223
+	"passport back":                    223,
+	"photo":                            224
 }
 
 // Valid function
