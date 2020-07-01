@@ -48,7 +48,7 @@ You can add a document to DMS in two steps:
 | --------- | ---------| -------------------------------------------------------- | 
 | obj_type  | string   | Object Type for which the document is being stored - app or user  | 
 | obj_id    | int      | Object ID for which the document is being stored.          | 
-| type      | string   | Type of the document being stored. Valid types:<br />Loan Agreement<br />CAF<br />SOC<br />NOC<br />Welcome Letter<br />Foreclosure Letter<br />SOA<br />RPS<br />Delivery Order<br />Insurance Form<br />Vehicle Registration Certificate<br />Passport<br />PAN<br />Aadhaar<br />Driving License<br />Voter ID Card<br />NREGA Job Card<br />Utility Bill<br />Bank Statement<br />Rent Agreement<br />Experian Bureau Report<br />CIBIL Bureau Report<br />CRIF Bureau Report<br />Equifax Bureau Report<br />CKYC XML<br />OKYC XML |
+| type      | string   | Type of the document being stored. Valid types:<br />Loan Agreement<br />CAF<br />SOC<br />NOC<br />Welcome Letter<br />Foreclosure Letter<br />SOA<br />RPS<br />Delivery Order<br />Insurance Form<br />Vehicle Registration Certificate<br />Passport<br />PAN<br />Aadhaar<br />Driving License<br />Voter ID Card<br />NREGA Job Card<br />Utility Bill<br />Bank Statement<br />Rent Agreement<br />Experian Bureau Report<br />CIBIL Bureau Report<br />CRIF Bureau Report<br />Equifax Bureau Report<br />CKYC XML<br />OKYC XML<br />Aadhaar Front<br />Aadhaar Back<br />Driving License Front<br />Driving License Back<br />Voter ID Card Front<br />Voter ID Card Back<br />Passport Front<br />Passport Back<br />Photo |
 | filename  | string   | Filename of the document to be stored.                   | 
 | attrs     | JSON     | Any metadata to be stored with the document.             |
 
