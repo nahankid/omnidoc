@@ -78,7 +78,7 @@ var DocumentCodes = map[string]int{
 	"legal report":                     233,
 }
 
-// Valid function
+// Valid function validates request
 func (cr CreateRequest) Valid() error {
 	dc := DocumentCodes[strings.ToLower(cr.Type)]
 
