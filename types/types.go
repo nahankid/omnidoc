@@ -36,6 +36,13 @@ var DocumentCodes = map[string]int{
 	"delivery order":                   109,
 	"insurance form":                   110,
 	"vehicle registration certificate": 111,
+	"undertaking docket":               112,
+	"fi report":                        113,
+	"fcu report":                       114,
+	"property":                         115,
+	"nach":                             116,
+	"pdc":                              117,
+	"drd":                              118,
 	"passport":                         201,
 	"pan":                              202,
 	"aadhaar":                          203,
@@ -59,7 +66,16 @@ var DocumentCodes = map[string]int{
 	"voter id card back":               221,
 	"passport front":                   222,
 	"passport back":                    223,
-	"photo":                            224
+	"photo":                            224,
+	"address proof":                    225,
+	"constitution of entity":           226,
+	"commercial cibil bureau report":   227,
+	"pd questionnaire":                 228,
+	"student data":                     229,
+	"ca certificate":                   230,
+	"audit report":                     231,
+	"valuation report":                 232,
+	"legal report":                     233,
 }
 
 // Valid function
