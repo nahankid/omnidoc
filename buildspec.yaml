@@ -30,6 +30,7 @@ phases:
       # We package the SAM template and create `packaged.yaml` file that will be used in our pipeline for deployment
       ## Here we separate Build from Deployment and segregate permissions for different steps
       - echo "Starting SAM packaging `date` in `pwd`"
+      - pipenv lock --clear
       - pip install --upgrade pip
       - pip install pipenv --user
       - pipenv install awscli aws-sam-cli
