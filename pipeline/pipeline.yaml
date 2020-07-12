@@ -30,6 +30,10 @@ Parameters:
       Type: String
       Default: aws/codebuild/standard:4.0 # More info on Images: https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
 
+    NotificationEmail:
+      Description: Omnidoc Pipeline Notification Email
+      Type: AWS::SSM::Parameter::Value<String>
+      Default: /service/omnidoc/pipeline/notification/email
 
 Resources:
 
@@ -313,9 +317,42 @@ Resources:
                           - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/omnidoc*/*'
                           - !Sub 'arn:aws:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31'
 
+###################################################################################################
+##   Metrics outputs                                                                            ##
+###################################################################################################
+
+    NotifyTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        Subscription:
+          - Endpoint: !Ref NotificationEmail
+            Protocol: "email"
+
+    PipelineEventRule: 
+      Type: AWS::Events::Rule
+      Properties: 
+        Description: "Send Pipeline Status to Subscribers"
+        EventPattern: 
+          source:
+            - "aws.codepipeline"
+          detail-type: 
+            - "CodePipeline Pipeline Execution State Change"
+          resources:
+            - !Ref Pipeline
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Ref: "NotifyTopic"
+            Id: "OmniDoc-Pipeline-NotifyTopic"
+            InputTransformer:
+              InputPathsMap:
+                project: "$.detail.pipeline"
+                status: "$.detail.state"
+                account: "$.account"
+              InputTemplate: '"<project> pipeline in account <account> has <status>."'
 
 Outputs:
-
 
     GitHubRepositoryHttpUrl:
       Description: GitHub Git repository
