@@ -35,6 +35,11 @@ Parameters:
       Type: AWS::SSM::Parameter::Value<String>
       Default: /service/omnidoc/pipeline/notification/email
 
+    BuildEnvironment:
+      Description: Omnidoc Build Environment
+      Type: String
+      Default: Prod
+
 Resources:
 
  ######   #######  ##     ## ########   ######  ######## 
@@ -338,7 +343,7 @@ Resources:
           detail-type: 
             - "CodePipeline Pipeline Execution State Change"
           resources:
-            - !Ref Pipeline
+            - !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:omnidoc'
         State: "ENABLED"
         Targets: 
           - 
@@ -349,8 +354,8 @@ Resources:
               InputPathsMap:
                 project: "$.detail.pipeline"
                 status: "$.detail.state"
-                account: "$.account"
-              InputTemplate: '"<project> pipeline in account <account> has <status>."'
+              InputTemplate: 
+                !Sub '"<project> pipeline in ${BuildEnvironment} has <status>."'
 
 Outputs:
 
