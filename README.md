@@ -125,7 +125,7 @@ You can rertrieve all documents from DMS for:
 
 ## Contributing to OmniDoc
 
-Fork, fix, then send me a pull request.
+Fork, fix, then send me a pull request..
 
 
 ## License
