@@ -33,7 +33,7 @@ phases:
       - pip install --upgrade pip
       - pip install pipenv --user
       - pipenv install aws-sam-cli
-      - pipenv run sam buil
+      - pipenv run sam build
       - pipenv run sam deploy --s3-bucket $BUILD_OUTPUT_BUCKET --stack-name omnidoc-deploy --capabilities CAPABILITY_IAM --region ap-south-1 --no-confirm-changeset
       # - aws cloudformation package --template-file template.yaml --s3-bucket $BUILD_OUTPUT_BUCKET --output-template-file packaged.yaml
   post_build:
