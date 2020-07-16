@@ -77,6 +77,7 @@ var DocumentCodes = map[string]int{
 	"valuation report":                    232,
 	"legal report":                        233,
 	"financial statement analysis report": 234,
+	"bank statement analysis report":      235,
 }
 
 // Valid function validates request
