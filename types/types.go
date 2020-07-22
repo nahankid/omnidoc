@@ -43,6 +43,8 @@ var DocumentCodes = map[string]int{
 	"nach":                                116,
 	"pdc":                                 117,
 	"drd":                                 118,
+	"approval email":                      119,
+	"others":                              120,
 	"passport":                            201,
 	"pan":                                 202,
 	"aadhaar":                             203,
@@ -78,6 +80,7 @@ var DocumentCodes = map[string]int{
 	"legal report":                        233,
 	"financial statement analysis report": 234,
 	"bank statement analysis report":      235,
+	"posidex output":                      236,
 }
 
 // Valid function validates request
