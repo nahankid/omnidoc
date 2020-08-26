@@ -46,6 +46,7 @@ var DocumentCodes = map[string]int{
 	"approval email":                      119,
 	"others":                              120,
 	"application docket":                  121,
+	"application docket (rectified)":      122,
 	"passport":                            201,
 	"pan":                                 202,
 	"aadhaar":                             203,
