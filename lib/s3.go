@@ -40,7 +40,7 @@ func PutObjectRequest(svc *s3.S3, key string) *request.Request {
 }
 
 // GetS3PresignedURL is used to get a presigned url to PUT an asset
-func GetS3PresignedURL(key string, S3ObjectRequest func(*s3.S3, string) *request.Request) (S3PresignedURL, error) {
+func GetS3PresignedURL(key string, S3ObjectRequest func(*s3.S3, string) *request.Request, eim int64) (S3PresignedURL, error) {
 	// Initialize a session in the target region that the SDK will use to load
 	// credentials from the shared credentials file ~/.aws/credentials.
 
@@ -52,14 +52,19 @@ func GetS3PresignedURL(key string, S3ObjectRequest func(*s3.S3, string) *request
 
 	var psURL S3PresignedURL
 	// Presign with expiration time
-	url, err := req.Presign(PresignedURLExpiration)
+	expiry := PresignedURLExpiration
+	if eim > 0 {
+		expiry = time.Duration(int64(time.Minute) * eim)
+	}
+
+	url, err := req.Presign(expiry)
 	if err != nil {
 		return psURL, err
 	}
 
 	psURL = S3PresignedURL{
 		URL:       url,
-		ExpiresAt: time.Now().Add(PresignedURLExpiration),
+		ExpiresAt: time.Now().Add(expiry),
 	}
 
 	// Return the presigned url

@@ -20,7 +20,7 @@ import (
 var db2 *gorm.DB
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	filter, err := validateRequest(request)
+	filter, eim, err := validateRequest(request)
 	if err != nil {
 		return lib.APIResponse(http.StatusBadRequest, err.Error())
 	}
@@ -36,7 +36,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	c := make(chan int)
 	go recordRequest(request, filter, c)
 
-	assets, err := getAssets(filter)
+	assets, err := getAssets(filter, eim)
 	if err != nil {
 		return lib.APIResponse(http.StatusInternalServerError, err.Error())
 	}
@@ -46,23 +46,29 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	return lib.APIResponse(http.StatusOK, assets)
 }
 
-func validateRequest(request events.APIGatewayProxyRequest) (models.Asset, error) {
+func validateRequest(request events.APIGatewayProxyRequest) (models.Asset, int64, error) {
 	// Validate Index Request
 	obj := request.QueryStringParameters["o"]
 	id := request.QueryStringParameters["id"]
 	t := request.QueryStringParameters["t"]
+	expMin := request.QueryStringParameters["e"]
 
 	filter := models.Asset{}
 
 	if obj == "" && id == "" && !(obj == "app" || obj == "user") {
 		log.Printf("Missing or invalid obj_type %s and obj_id %s", obj, id)
-		return filter, fmt.Errorf("Missing or invalid obj_type %s and obj_id %s", obj, id)
+		return filter, 0, fmt.Errorf("Missing or invalid obj_type %s and obj_id %s", obj, id)
 	}
 
 	oid, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		log.Println("validateRequest", err.Error())
-		return filter, err
+		return filter, 0, err
+	}
+
+	eim, err := strconv.ParseInt(expMin, 10, 64)
+	if err != nil {
+		log.Println("Invalid expiry in minutes", err.Error())
 	}
 
 	// Create filter for database query
@@ -74,7 +80,7 @@ func validateRequest(request events.APIGatewayProxyRequest) (models.Asset, error
 	}
 
 	log.Println("Validated Request", filter)
-	return filter, nil
+	return filter, eim, nil
 }
 
 func recordRequest(request events.APIGatewayProxyRequest, filter models.Asset, c chan int) {
@@ -100,7 +106,7 @@ func recordRequest(request events.APIGatewayProxyRequest, filter models.Asset, c
 	c <- 1
 }
 
-func getAssets(filter models.Asset) (string, error) {
+func getAssets(filter models.Asset, eim int64) (string, error) {
 	var assets []models.Asset
 
 	db2.Where(filter).Select("DISTINCT ON (file_name) *").Order("file_name, updated_at DESC").Find(&assets)
@@ -113,7 +119,7 @@ func getAssets(filter models.Asset) (string, error) {
 	// Create response
 	resps := make([]types.GetResponse, len(assets))
 	for i, asset := range assets {
-		psURL, err := lib.GetS3PresignedURL(asset.FileName, lib.GetObjectRequest)
+		psURL, err := lib.GetS3PresignedURL(asset.FileName, lib.GetObjectRequest, eim)
 		if err != nil {
 			log.Println("getAssets", err.Error())
 			return "", err
