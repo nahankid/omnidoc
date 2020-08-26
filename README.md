@@ -85,6 +85,7 @@ You can rertrieve all documents from DMS for:
 ```
 - GET /?o=app&id=402
 - GET /?o=app&id=402&t=Loan Agreement
+- GET /?o=app&id=402&t=Loan Agreement&e=1440
 ```
 
 ### Parameters
@@ -94,6 +95,7 @@ You can rertrieve all documents from DMS for:
 | o            | string   | Object Type for which the documents are to be retrieved     | 
 | id           | int      | Object ID for which the documents are to be retrieved       | 
 | t            | string   | Type of document to be retrieved                            | 
+| e            | int      | Expiry for the link in minutes (Default: 10 minutes)        | 
 
 
 ### Response
