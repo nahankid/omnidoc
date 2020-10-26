@@ -91,7 +91,7 @@ var DocumentCodes = map[string]int{
 	"udyam certificate":                   239,
 	"ownership proof":                     240,
 	"kyc docket":                          241,
-	"gst":								   242	  
+	"gst":				       242	  
 }
 
 // Valid function validates request
