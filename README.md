@@ -48,7 +48,7 @@ You can add a document to DMS in two steps:
 | --------- | ---------| -------------------------------------------------------- | 
 | obj_type  | string   | Object Type for which the document is being stored - app or user  | 
 | obj_id    | int      | Object ID for which the document is being stored.          | 
-| type      | string   | Type of the document being stored. Valid types:<br />Loan Agreement<br />CAF<br />SOC<br />NOC<br />Welcome Letter<br />Foreclosure Letter<br />SOA<br />RPS<br />Delivery Order<br />Insurance Form<br />Vehicle Registration Certificate<br />Undertaking Docket<br />FI Report<br />FCU Report<br />Property<br />NACH<br />PDC<br />DRD<br />Passport<br />PAN<br />Aadhaar<br />Driving License<br />Voter ID Card<br />NREGA Job Card<br />Utility Bill<br />Bank Statement<br />Rent Agreement<br />Experian Bureau Report<br />CIBIL Bureau Report<br />CRIF Bureau Report<br />Equifax Bureau Report<br />CKYC XML<br />OKYC XML<br />Aadhaar Front<br />Aadhaar Back<br />Driving License Front<br />Driving License Back<br />Voter ID Card Front<br />Voter ID Card Back<br />Passport Front<br />Passport Back<br />Photo<br />Address Proof<br />Constitution of Entity<br />Commercial Cibil Bureau Report<br />PD Questionnaire<br />Student Data<br />CA Certificate<br />Audit Report<br />Valuation Report<br />Legal Report<br />Financial Statement Analysis Report |
+| type      | string   | Type of the document being stored. Valid types:<br />Loan Agreement<br />CAF<br />SOC<br />NOC<br />Welcome Letter<br />Foreclosure Letter<br />SOA<br />RPS<br />Delivery Order<br />Insurance Form<br />Vehicle Registration Certificate<br />Undertaking Docket<br />FI Report<br />FCU Report<br />Property<br />NACH<br />PDC<br />DRD<br />Passport<br />PAN<br />Aadhaar<br />Driving License<br />Voter ID Card<br />NREGA Job Card<br />Utility Bill<br />Bank Statement<br />Rent Agreement<br />Experian Bureau Report<br />CIBIL Bureau Report<br />CRIF Bureau Report<br />Equifax Bureau Report<br />CKYC XML<br />OKYC XML<br />Aadhaar Front<br />Aadhaar Back<br />Driving License Front<br />Driving License Back<br />Voter ID Card Front<br />Voter ID Card Back<br />Passport Front<br />Passport Back<br />Photo<br />Address Proof<br />Constitution of Entity<br />Commercial Cibil Bureau Report<br />PD Questionnaire<br />Student Data<br />CA Certificate<br />Audit Report<br />Valuation Report<br />Legal Report<br />Financial Statement Analysis Report<br />Application Form<br />GST<br />KYC Docket<br />CMA Data/Projections<br />Udyam Certificate<br />Ownership Proof<br />Existing Lan Documents<br />Sanction letter |
 | filename  | string   | Filename of the document to be stored.                   | 
 | attrs     | JSON     | Any metadata to be stored with the document.             |
 
@@ -85,6 +85,7 @@ You can rertrieve all documents from DMS for:
 ```
 - GET /?o=app&id=402
 - GET /?o=app&id=402&t=Loan Agreement
+- GET /?o=app&id=402&t=Loan Agreement&e=1440
 ```
 
 ### Parameters
@@ -94,6 +95,7 @@ You can rertrieve all documents from DMS for:
 | o            | string   | Object Type for which the documents are to be retrieved     | 
 | id           | int      | Object ID for which the documents are to be retrieved       | 
 | t            | string   | Type of document to be retrieved                            | 
+| e            | int      | Expiry for the link in minutes (Default: 10 minutes)        | 
 
 
 ### Response
