@@ -47,6 +47,9 @@ var DocumentCodes = map[string]int{
 	"others":                              120,
 	"application docket":                  121,
 	"application docket (rectified)":      122,
+	"existing lan documents":              123,
+	"sanction letter":                     124,
+	"application form":                    125, 
 	"passport":                            201,
 	"pan":                                 202,
 	"aadhaar":                             203,
@@ -83,6 +86,12 @@ var DocumentCodes = map[string]int{
 	"financial statement analysis report": 234,
 	"bank statement analysis report":      235,
 	"posidex output":                      236,
+	"debtors and creditors list":          237,
+	"cma data/projections":                238,
+	"udyam certificate":                   239,
+	"ownership proof":                     240,
+	"kyc docket":                          241,
+	"gst":				       242,	  
 }
 
 // Valid function validates request
